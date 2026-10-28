@@ -1,5 +1,5 @@
 # TEMP playtest host
 
-warrior-feel @ `bc31994435733ca9144c2d65657a8b170b788662` (master tip after #14/#15: camp hub, beetle boss, purple swap, table bake).
+warrior-feel @ `9595f51a2544c836ba831092661264c8e0dec458` (master tip: W0–W3 学技门控/盾格挡/默认读表).
 
 Phone QA mirror. Delete after playtest.
