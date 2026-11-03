@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>涂鸦鱼缸</title>
+<style>
+  :root {
+    --cream: #fff8ef;
+    --cream-deep: #f5e6d3;
+    --sea: #d4eef7;
+    --sea-deep: #a8d8e8;
+    --ink: #3d4a5c;
+    --accent: #5bb8d4;
+    --accent-dark: #3a9bb8;
+    --bubble: rgba(255,255,255,0.92);
+    --tank-glass: rgba(180,220,235,0.35);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
+    background: linear-gradient(180deg, var(--sea) 0%, var(--cream) 55%, var(--cream-deep) 100%);
+    color: var(--ink);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 430px;
+    height: 100%;
+    max-height: 100dvh;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 10px 12px calc(12px + var(--safe-bottom));
+    gap: 8px;
+  }
+
+  header {
+    flex: 0 0 auto;
+    text-align: center;
+    padding: 4px 0 2px;
+  }
+
+  header h1 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--accent-dark);
+  }
+
+  header p {
+    font-size: 0.78rem;
+    opacity: 0.75;
+    margin-top: 2px;
+  }
+
+  .tank-wrap {
+    flex: 1 1 48%;
+    min-height: 220px;
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #b8e0f0 0%, #8ec9de 40%, #6eb0c8 100%);
+    box-shadow:
+      inset 0 0 40px rgba(255,255,255,0.35),
+      inset 0 -20px 30px rgba(40,90,110,0.15),
+      0 4px 16px rgba(60,120,140,0.2);
+    border: 3px solid rgba(255,255,255,0.55);
+  }
+
+  .tank-wrap::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 40% at 50% 0%, rgba(255,255,255,0.45), transparent),
+      radial-gradient(circle at 20% 80%, rgba(90,160,80,0.25) 0 18px, transparent 19px),
+      radial-gradient(circle at 75% 85%, rgba(90,160,80,0.2) 0 12px, transparent 13px),
+      radial-gradient(circle at 50% 90%, rgba(180,140,80,0.35) 0 40%, transparent 55%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  #tank {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+  }
+
+  .bubble-tip {
+    position: absolute;
+    z-index: 10;
+    max-width: 140px;
+    padding: 8px 12px;
+    background: var(--bubble);
+    border-radius: 14px;
+    font-size: 0.85rem;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -100%) scale(0.85);
+    transition: opacity 0.2s, transform 0.2s;
+    white-space: nowrap;
+  }
+
+  .bubble-tip.show {
+    opacity: 1;
+    transform: translate(-50%, calc(-100% - 8px)) scale(1);
+  }
+
+  .bubble-tip::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -6px;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--bubble);
+    border-bottom: 0;
+  }
+
+  .draw-section {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .draw-label {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    text-align: center;
+  }
+
+  .canvas-frame {
+    position: relative;
+    height: min(38vh, 280px);
+    min-height: 160px;
+    border-radius: 16px;
+    background: var(--cream);
+    border: 2px dashed rgba(91,184,212,0.45);
+    overflow: hidden;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  #draw {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    cursor: crosshair;
+  }
+
+  .hint-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    color: rgba(61,74,92,0.28);
+    font-size: 0.95rem;
+    transition: opacity 0.25s;
+  }
+
+  .hint-overlay.hide { opacity: 0; }
+
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  button {
+    appearance: none;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    min-height: 48px;
+    min-width: 108px;
+    transition: transform 0.12s, background 0.15s, opacity 0.15s;
+    color: #fff;
+    background: var(--accent);
+    box-shadow: 0 3px 0 var(--accent-dark);
+  }
+
+  button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--accent-dark); }
+
+  button.secondary {
+    background: #e8a87c;
+    box-shadow: 0 3px 0 #c4845a;
+  }
+
+  button.ghost {
+    background: rgba(61,74,92,0.12);
+    color: var(--ink);
+    box-shadow: none;
+  }
+
+  .toast {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    transform: translate(-50%, -50%);
+    background: rgba(40,50,60,0.88);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+    white-space: nowrap;
+  }
+
+  .toast.show { opacity: 1; }
+
+  .count {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    z-index: 5;
+    font-size: 0.72rem;
+    background: rgba(255,255,255,0.55);
+    padding: 3px 8px;
+    border-radius: 999px;
+    color: var(--ink);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>涂鸦鱼缸</h1>
+    <p>用手指画一条鱼，松手就丢进缸里</p>
+  </header>
+
+  <div class="tank-wrap" id="tankWrap">
+    <span class="count" id="fishCount">鱼：0 / 12</span>
+    <canvas id="tank"></canvas>
+    <div class="bubble-tip" id="bubble"></div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <div class="draw-section">
+    <div class="draw-label">涂鸦画板 · 画完松手自动入缸</div>
+    <div class="canvas-frame">
+      <canvas id="draw"></canvas>
+      <div class="hint-overlay" id="hint">在这里画鱼轮廓 ✎</div>
+    </div>
+    <div class="toolbar">
+      <button type="button" id="btnRedraw">再画一条</button>
+      <button type="button" class="secondary" id="btnClearTank">清空鱼缸</button>
+      <button type="button" class="ghost" id="btnClearStroke">擦掉笔画</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const MAX_FISH = 12;
+  const NAMES = [
+    '小泡泡','豆豆','呱呱','闪闪','糯米','球球','咪咪','跳跳',
+    '云朵','果汁','泡芙','海盐','柠檬','花生','布丁','汽水',
+    '月月','星星','糖糖','毛毛','点点','咕噜','歪歪','团子'
+  ];
+  const FILL_COLORS = [
+    '#ff8a7a','#ffb347','#ffe066','#98d8a0','#7ec8e3',
+    '#b8a9e8','#f4a6c9','#a8e6cf','#ffd3b6','#c9e4de',
+    '#f7c59f','#9ad0ec'
+  ];
+
+  // —— DOM ——
+  const tankCanvas = document.getElementById('tank');
+  const drawCanvas = document.getElementById('draw');
+  const tankWrap = document.getElementById('tankWrap');
+  const bubbleEl = document.getElementById('bubble');
+  const toastEl = document.getElementById('toast');
+  const hintEl = document.getElementById('hint');
+  const fishCountEl = document.getElementById('fishCount');
+  const tankCtx = tankCanvas.getContext('2d');
+  const drawCtx = drawCanvas.getContext('2d');
+
+  // —— State ——
+  let fishes = [];
+  let drawing = false;
+  let strokes = []; // current path points {x,y}
+  let usedNames = new Set();
+  let bubbleTimer = null;
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  // —— Helpers ——
+  function showToast(msg, ms) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toastEl.classList.remove('show'), ms || 1800);
+  }
+
+  function pickName() {
+    const avail = NAMES.filter(n => !usedNames.has(n));
+    const pool = avail.length ? avail : NAMES;
+    const name = pool[Math.floor(Math.random() * pool.length)];
+    usedNames.add(name);
+    if (usedNames.size > NAMES.length) usedNames.clear();
+    return name;
+  }
+
+  function resizeCanvas(canvas, cssW, cssH) {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.max(1, Math.floor(cssW * dpr));
+    canvas.height = Math.max(1, Math.floor(cssH * dpr));
+    canvas.style.width = cssW + 'px';
+    canvas.style.height = cssH + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { w: cssW, h: cssH };
+  }
+
+  function layout() {
+    const tr = tankWrap.getBoundingClientRect();
+    resizeCanvas(tankCanvas, tr.width, tr.height);
+
+    const frame = drawCanvas.parentElement.getBoundingClientRect();
+    resizeCanvas(drawCanvas, frame.width, frame.height);
+    redrawStroke();
+  }
+
+  // —— Drawing board ——
+  function getDrawPos(e) {
+    const r = drawCanvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX - r.left, y: t.clientY - r.top };
+  }
+
+  function startDraw(e) {
+    e.preventDefault();
+    drawing = true;
+    strokes = [];
+    const p = getDrawPos(e);
+    strokes.push(p);
+    hintEl.classList.add('hide');
+    redrawStroke();
+  }
+
+  function moveDraw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    const p = getDrawPos(e);
+    const last = strokes[strokes.length - 1];
+    if (!last || (p.x - last.x) ** 2 + (p.y - last.y) ** 2 > 1.5) {
+      strokes.push(p);
+      redrawStroke();
+    }
+  }
+
+  function endDraw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    drawing = false;
+    if (strokes.length < 8) {
+      showToast('线条太短啦，再画长一点');
+      strokes = [];
+      redrawStroke();
+      if (!fishes.length) hintEl.classList.remove('hide');
+      return;
+    }
+    createFishFromStroke(strokes);
+    strokes = [];
+    redrawStroke();
+  }
+
+  function redrawStroke() {
+    const w = drawCanvas.width / dpr;
+    const h = drawCanvas.height / dpr;
+    drawCtx.clearRect(0, 0, w, h);
+    if (strokes.length < 2) return;
+    drawCtx.lineCap = 'round';
+    drawCtx.lineJoin = 'round';
+    drawCtx.strokeStyle = '#3d4a5c';
+    drawCtx.lineWidth = 4;
+    drawCtx.beginPath();
+    drawCtx.moveTo(strokes[0].x, strokes[0].y);
+    for (let i = 1; i < strokes.length; i++) {
+      drawCtx.lineTo(strokes[i].x, strokes[i].y);
+    }
+    drawCtx.stroke();
+  }
+
+  function clearStroke() {
+    strokes = [];
+    drawing = false;
+    redrawStroke();
+    hintEl.classList.remove('hide');
+  }
+
+  // —— Rasterize stroke → fish sprite ——
+  function createFishFromStroke(pts) {
+    // Bounding box
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const p of pts) {
+      if (p.x < minX) minX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y > maxY) maxY = p.y;
+    }
+    const pad = 10;
+    minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+    let bw = maxX - minX;
+    let bh = maxY - minY;
+    if (bw < 20) bw = 20;
+    if (bh < 20) bh = 20;
+
+    // Target display size (keep aspect, clamp)
+    const maxSide = 72;
+    const scale = Math.min(maxSide / bw, maxSide / bh, 1.2);
+    const sw = Math.ceil(bw * scale);
+    const sh = Math.ceil(bh * scale);
+
+    const off = document.createElement('canvas');
+    off.width = Math.max(1, Math.ceil(bw));
+    off.height = Math.max(1, Math.ceil(bh));
+    const octx = off.getContext('2d');
+
+    // Fill: soft blob along stroke using fat stroke then composite
+    const fillColor = FILL_COLORS[Math.floor(Math.random() * FILL_COLORS.length)];
+
+    // Draw thick path as fill body
+    octx.lineCap = 'round';
+    octx.lineJoin = 'round';
+    octx.strokeStyle = fillColor;
+    octx.lineWidth = Math.max(14, Math.min(bw, bh) * 0.35);
+    octx.beginPath();
+    octx.moveTo(pts[0].x - minX, pts[0].y - minY);
+    for (let i = 1; i < pts.length; i++) {
+      octx.lineTo(pts[i].x - minX, pts[i].y - minY);
+    }
+    octx.stroke();
+
+    // Outline
+    octx.strokeStyle = '#2c3a4a';
+    octx.lineWidth = 3.2;
+    octx.beginPath();
+    octx.moveTo(pts[0].x - minX, pts[0].y - minY);
+    for (let i = 1; i < pts.length; i++) {
+      octx.lineTo(pts[i].x - minX, pts[i].y - minY);
+    }
+    octx.stroke();
+
+    // Eye near the "front" of the stroke (last 20% of path, or first if going left)
+    const n = pts.length;
+    const headIdx = Math.floor(n * 0.82);
+    const hx = pts[headIdx].x - minX;
+    const hy = pts[headIdx].y - minY;
+    const eyeR = Math.max(3.5, Math.min(bw, bh) * 0.07);
+    octx.fillStyle = '#fff';
+    octx.beginPath();
+    octx.arc(hx, hy - eyeR * 0.3, eyeR, 0, Math.PI * 2);
+    octx.fill();
+    octx.fillStyle = '#1a1a1a';
+    octx.beginPath();
+    octx.arc(hx + eyeR * 0.15, hy - eyeR * 0.3, eyeR * 0.45, 0, Math.PI * 2);
+    octx.fill();
+
+    // Scale to display canvas
+    const sprite = document.createElement('canvas');
+    sprite.width = sw;
+    sprite.height = sh;
+    const sctx = sprite.getContext('2d');
+    sctx.drawImage(off, 0, 0, off.width, off.height, 0, 0, sw, sh);
+
+    addFish(sprite, sw, sh, fillColor);
+  }
+
+  function addFish(sprite, w, h, color) {
+    if (fishes.length >= MAX_FISH) {
+      fishes.shift();
+      showToast('鱼缸满了，最老的一条游走了');
+    }
+    const tw = tankCanvas.width / dpr;
+    const th = tankCanvas.height / dpr;
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    const fish = {
+      sprite,
+      w, h,
+      x: 20 + Math.random() * Math.max(10, tw - w - 40),
+      y: 30 + Math.random() * Math.max(10, th - h - 60),
+      vx: dir * (0.35 + Math.random() * 0.55),
+      baseY: 0,
+      phase: Math.random() * Math.PI * 2,
+      amp: 6 + Math.random() * 10,
+      turnCooldown: 180 + Math.random() * 240,
+      name: pickName(),
+      color,
+      flip: dir < 0,
+      bobSpeed: 0.02 + Math.random() * 0.025
+    };
+    fish.baseY = fish.y;
+    fishes.push(fish);
+    updateCount();
+    showToast(fish.name + ' 游进来啦！');
+  }
+
+  function updateCount() {
+    fishCountEl.textContent = '鱼：' + fishes.length + ' / ' + MAX_FISH;
+  }
+
+  // —— Seed starter fish (simple shapes so tank isn't empty) ——
+  function makeSimpleFishSprite(color) {
+    const w = 56, h = 36;
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    // body
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.ellipse(28, 18, 20, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#2c3a4a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    // tail
+    ctx.beginPath();
+    ctx.moveTo(10, 18);
+    ctx.lineTo(2, 8);
+    ctx.lineTo(2, 28);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.stroke();
+    // eye
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(40, 15, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#111';
+    ctx.beginPath();
+    ctx.arc(41, 15, 2, 0, Math.PI * 2);
+    ctx.fill();
+    return c;
+  }
+
+  function seedFish() {
+    const colors = ['#ff8a7a', '#7ec8e3', '#ffe066'];
+    for (let i = 0; i < 3; i++) {
+      const sp = makeSimpleFishSprite(colors[i]);
+      addFish(sp, 56, 36, colors[i]);
+    }
+    // Quiet the seed toasts — keep last one only briefly cleared
+    toastEl.classList.remove('show');
+  }
+
+  // —— Tank animation ——
+  function tick() {
+    const tw = tankCanvas.width / dpr;
+    const th = tankCanvas.height / dpr;
+    tankCtx.clearRect(0, 0, tw, th);
+
+    // soft water particles
+    tankCtx.globalAlpha = 0.25;
+    for (let i = 0; i < 8; i++) {
+      const bx = ((Date.now() / 40 + i * 47) % (tw + 20)) - 10;
+      const by = th - ((Date.now() / 25 + i * 73) % (th * 0.7));
+      tankCtx.beginPath();
+      tankCtx.fillStyle = '#fff';
+      tankCtx.arc(bx, by, 2 + (i % 3), 0, Math.PI * 2);
+      tankCtx.fill();
+    }
+    tankCtx.globalAlpha = 1;
+
+    for (const f of fishes) {
+      f.phase += f.bobSpeed;
+      f.y = f.baseY + Math.sin(f.phase) * f.amp;
+      f.x += f.vx;
+      f.turnCooldown--;
+
+      // bounce / turn
+      if (f.x < 4) {
+        f.x = 4;
+        f.vx = Math.abs(f.vx);
+        f.flip = false;
+      } else if (f.x + f.w > tw - 4) {
+        f.x = tw - 4 - f.w;
+        f.vx = -Math.abs(f.vx);
+        f.flip = true;
+      }
+
+      if (f.turnCooldown <= 0 && Math.random() < 0.02) {
+        f.vx *= -1;
+        f.flip = f.vx < 0;
+        f.turnCooldown = 120 + Math.random() * 280;
+        f.baseY = Math.max(20, Math.min(th - f.h - 30, f.baseY + (Math.random() - 0.5) * 40));
+      }
+
+      // keep vertical in bounds
+      if (f.baseY < 16) f.baseY = 16;
+      if (f.baseY > th - f.h - 20) f.baseY = th - f.h - 20;
+
+      tankCtx.save();
+      tankCtx.translate(f.x + f.w / 2, f.y + f.h / 2);
+      if (f.flip) tankCtx.scale(-1, 1);
+      // slight tilt
+      tankCtx.rotate(Math.sin(f.phase) * 0.08);
+      tankCtx.drawImage(f.sprite, -f.w / 2, -f.h / 2, f.w, f.h);
+      tankCtx.restore();
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  // —— Tap fish for bubble ——
+  function hitTestFish(clientX, clientY) {
+    const r = tankCanvas.getBoundingClientRect();
+    const x = clientX - r.left;
+    const y = clientY - r.top;
+    // reverse order: topmost last drawn
+    for (let i = fishes.length - 1; i >= 0; i--) {
+      const f = fishes[i];
+      if (x >= f.x && x <= f.x + f.w && y >= f.y && y <= f.y + f.h) {
+        return f;
+      }
+    }
+    return null;
+  }
+
+  function showBubble(fish, clientX, clientY) {
+    const wrapR = tankWrap.getBoundingClientRect();
+    let left = clientX - wrapR.left;
+    let top = clientY - wrapR.top;
+    left = Math.max(50, Math.min(wrapR.width - 50, left));
+    top = Math.max(40, top);
+    bubbleEl.style.left = left + 'px';
+    bubbleEl.style.top = top + 'px';
+    bubbleEl.textContent = '嗨，我是' + fish.name + '～';
+    bubbleEl.classList.add('show');
+    clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(() => bubbleEl.classList.remove('show'), 2200);
+  }
+
+  tankCanvas.addEventListener('pointerdown', function (e) {
+    const f = hitTestFish(e.clientX, e.clientY);
+    if (f) {
+      e.preventDefault();
+      showBubble(f, e.clientX, e.clientY);
+    }
+  });
+
+  // —— Draw events ——
+  drawCanvas.addEventListener('pointerdown', startDraw);
+  drawCanvas.addEventListener('pointermove', moveDraw);
+  drawCanvas.addEventListener('pointerup', endDraw);
+  drawCanvas.addEventListener('pointercancel', endDraw);
+  drawCanvas.addEventListener('pointerleave', function (e) {
+    if (drawing) endDraw(e);
+  });
+
+  // Prevent page scroll / rubber-band while interacting
+  document.body.addEventListener('touchmove', function (e) {
+    e.preventDefault();
+  }, { passive: false });
+
+  document.getElementById('btnRedraw').addEventListener('click', function () {
+    clearStroke();
+    showToast('画板已清空，再画一条吧');
+  });
+
+  document.getElementById('btnClearTank').addEventListener('click', function () {
+    fishes = [];
+    usedNames.clear();
+    updateCount();
+    bubbleEl.classList.remove('show');
+    showToast('鱼缸空空如也');
+  });
+
+  document.getElementById('btnClearStroke').addEventListener('click', clearStroke);
+
+  window.addEventListener('resize', layout);
+  window.addEventListener('orientationchange', function () {
+    setTimeout(layout, 200);
+  });
+
+  // init
+  layout();
+  seedFish();
+  updateCount();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
