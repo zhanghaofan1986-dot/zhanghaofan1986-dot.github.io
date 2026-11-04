@@ -6,7 +6,8 @@
 
 ## 怎么打开
 
-- **手机直开（GitHub Pages）**：见仓库 About / 本 README 顶部链接（部署后约 1 分钟生效）。
+- **手机直开（GitHub Pages）**：https://zhanghaofan1986-dot.github.io/sealed-cassette/
+- **源码仓**：https://github.com/zhanghaofan1986-dot/sealed-cassette-demo （PAT 无法直接开 Pages，故托管于用户 github.io 子目录）
 - **本地**：双击 `index.html`，或用浏览器打开 `file:///…/sealed-cassette/index.html`。
 - **本地小服务**：在本目录执行  
   `python3 -m http.server 8765`  
