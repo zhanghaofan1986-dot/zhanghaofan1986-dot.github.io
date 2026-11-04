@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="description" content="尘封卡带 · 竖屏擦拭开箱玩法 TEMP playtest demo" />
+  <title>尘封卡带 · Sealed Cassette</title>
+  <style>
+    :root {
+      --bg: #2a2118;
+      --phone: #3d3226;
+      --phone-edge: #5a4a38;
+      --cream: #f3e6d0;
+      --cardboard: #c9a87c;
+      --paper: #e8d4b5;
+      --rust: #8b5a3c;
+      --dirt: #4a3426;
+      --ink: #2c2218;
+      --muted: #a89078;
+      --accent: #c4783a;
+      --accent-deep: #9a5a28;
+      --gold: #d4a84b;
+      --shelf: #5c4330;
+      --ok: #6b8f5e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--cream);
+      font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .wrap {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(196, 120, 58, 0.12), transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(90, 60, 40, 0.35), transparent 55%),
+        var(--bg);
+    }
+    .phone {
+      width: min(100%, 400px);
+      height: min(100%, 820px);
+      background: linear-gradient(165deg, #4a3c2e 0%, var(--phone) 45%, #32281e 100%);
+      border-radius: 28px;
+      border: 2px solid var(--phone-edge);
+      box-shadow:
+        0 22px 56px rgba(0,0,0,.55),
+        inset 0 1px 0 rgba(255,255,255,.08),
+        inset 0 -2px 8px rgba(0,0,0,.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    header {
+      padding: 14px 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .title-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    h1 {
+      font-size: 1.18rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      color: var(--cream);
+    }
+    h1 span { color: var(--accent); }
+    .badge {
+      font-size: .72rem;
+      color: var(--muted);
+      background: rgba(0,0,0,.28);
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(201, 168, 124, .25);
+      white-space: nowrap;
+    }
+    .progress-block { display: flex; flex-direction: column; gap: 4px; }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: .75rem;
+      color: var(--muted);
+    }
+    .progress-meta strong { color: var(--gold); font-size: .95rem; }
+    .bar {
+      height: 8px;
+      background: rgba(0,0,0,.4);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(201,168,124,.15);
+    }
+    .bar > i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-deep), var(--gold));
+      border-radius: 999px;
+      transition: width .08s linear;
+    }
+    .stage {
+      flex: 1;
+      position: relative;
+      margin: 0 12px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--paper);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.2), inset 0 8px 24px rgba(0,0,0,.08);
+      min-height: 220px;
+      cursor: default;
+    }
+    .stage.wipe-mode { cursor: crosshair; }
+    .stage canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #baseCanvas { z-index: 1; }
+    #dirtCanvas { z-index: 2; touch-action: none; }
+    .panel {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      text-align: center;
+      background: linear-gradient(180deg, #d9c4a0 0%, #c4a882 100%);
+      color: var(--ink);
+    }
+    .panel.show { display: flex; }
+    .panel h2 {
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+      color: var(--ink);
+    }
+    .panel p {
+      font-size: .88rem;
+      line-height: 1.5;
+      color: #5a4634;
+      max-width: 90%;
+      margin-bottom: 16px;
+    }
+    .parcel {
+      width: 140px;
+      height: 110px;
+      background: linear-gradient(145deg, #c9a87c, #a8885e);
+      border: 2px solid #8a6a48;
+      border-radius: 6px;
+      box-shadow: 4px 6px 0 rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.25);
+      position: relative;
+      margin-bottom: 18px;
+      animation: parcelBob 2.4s ease-in-out infinite;
+    }
+    .parcel::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -6px;
+      width: 70%;
+      height: 14px;
+      transform: translateX(-50%);
+      background: repeating-linear-gradient(-45deg, #8b5a3c, #8b5a3c 6px, #a07048 6px, #a07048 12px);
+      border-radius: 2px;
+      opacity: .85;
+    }
+    .parcel::after {
+      content: "📦";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      filter: grayscale(.15) sepia(.25);
+    }
+    .parcel .stamp {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      font-size: .62rem;
+      color: #6a4030;
+      border: 1.5px dashed #8b5a3c;
+      padding: 2px 5px;
+      transform: rotate(-8deg);
+      opacity: .75;
+      z-index: 1;
+    }
+    @keyframes parcelBob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .hint {
+      position: absolute;
+      z-index: 3;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      text-align: center;
+      color: rgba(255,255,255,.95);
+      text-shadow: 0 2px 8px rgba(0,0,0,.55);
+      font-size: .9rem;
+      opacity: 1;
+      transition: opacity .4s;
+      padding: 10px 14px;
+      background: rgba(44, 34, 24, .55);
+      border-radius: 12px;
+      max-width: 82%;
+      line-height: 1.4;
+    }
+    .hint.hidden { opacity: 0; }
+    .cleared-overlay {
+      position: absolute;
+      z-index: 4;
+      inset: 0;
+      background: rgba(44, 34, 24, .72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 10px;
+      backdrop-filter: blur(2px);
+      padding: 16px;
+      text-align: center;
+    }
+    .cleared-overlay.show { display: flex; }
+    .cleared-overlay h2 {
+      font-size: 1.45rem;
+      color: var(--gold);
+    }
+    .cleared-overlay p { color: var(--cream); font-size: .88rem; line-height: 1.45; }
+    .cleared-overlay .tape-name {
+      color: var(--cardboard);
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .shelf-view {
+      position: absolute;
+      inset: 0;
+      z-index: 6;
+      display: none;
+      flex-direction: column;
+      background: linear-gradient(180deg, #4a3728 0%, #3a2a1e 100%);
+      padding: 14px 12px 12px;
+      overflow: hidden;
+    }
+    .shelf-view.show { display: flex; }
+    .shelf-view h2 {
+      font-size: 1.05rem;
+      margin-bottom: 4px;
+      color: var(--cream);
+      text-align: center;
+    }
+    .shelf-view .sub {
+      font-size: .72rem;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .shelf-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      overflow-y: auto;
+      padding: 4px 2px 8px;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+    }
+    .slot {
+      background: linear-gradient(180deg, #5c4330, #4a3526);
+      border: 1px solid rgba(0,0,0,.35);
+      border-radius: 10px;
+      padding: 8px 6px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      min-height: 118px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,.25);
+    }
+    .slot.empty {
+      opacity: .55;
+    }
+    .slot.empty .thumb {
+      background: rgba(0,0,0,.25);
+      border: 1px dashed rgba(201,168,124,.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: .7rem;
+    }
+    .slot canvas.thumb {
+      width: 92px;
+      height: 72px;
+      border-radius: 4px;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      box-shadow: 0 2px 6px rgba(0,0,0,.35);
+    }
+    .slot.rare {
+      border: 2px solid var(--gold);
+      box-shadow: 0 0 0 1px rgba(212,168,75,.35), inset 0 2px 6px rgba(0,0,0,.25);
+    }
+    .slot .label {
+      font-size: .7rem;
+      color: var(--cream);
+      text-align: center;
+      line-height: 1.25;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .slot .rare-tag {
+      font-size: .58rem;
+      color: #3a2a10;
+      background: var(--gold);
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    footer {
+      padding: 10px 12px 14px;
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    button {
+      flex: 1;
+      min-width: 88px;
+      border: none;
+      border-radius: 12px;
+      padding: 11px 8px;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--cream);
+      background: #4a3c2e;
+      border: 1px solid rgba(201,168,124,.22);
+      transition: transform .1s, background .15s, opacity .15s;
+    }
+    button:active { transform: scale(.97); }
+    button.primary {
+      background: linear-gradient(135deg, var(--accent-deep), var(--accent));
+      color: #fff8ee;
+      border-color: transparent;
+    }
+    button.secondary {
+      background: rgba(196, 120, 58, .18);
+      color: var(--gold);
+      border-color: rgba(212, 168, 75, .35);
+    }
+    button.ok {
+      background: linear-gradient(135deg, #5a7a4e, var(--ok));
+      color: #f4ffe8;
+      border-color: transparent;
+    }
+    button:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .toast {
+      position: absolute;
+      z-index: 20;
+      left: 50%;
+      bottom: 86px;
+      transform: translateX(-50%) translateY(12px);
+      background: rgba(30, 22, 14, .88);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: .78rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      white-space: nowrap;
+      max-width: 90%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="phone" id="phone">
+      <header>
+        <div class="title-row">
+          <h1>尘封<span>卡带</span></h1>
+          <div class="badge" id="statusBadge">今日包裹</div>
+        </div>
+        <div class="progress-block">
+          <div class="progress-meta">
+            <span>修复进度</span>
+            <strong id="pctLabel">—</strong>
+          </div>
+          <div class="bar"><i id="pctBar"></i></div>
+        </div>
+      </header>
+
+      <div class="stage" id="stage">
+        <canvas id="baseCanvas"></canvas>
+        <canvas id="dirtCanvas"></canvas>
+        <div class="hint hidden" id="hint">用手指 / 鼠标拖着擦掉污垢</div>
+        <div class="cleared-overlay" id="cleared">
+          <h2>✦ 污垢褪尽</h2>
+          <p class="tape-name" id="clearedName"></p>
+          <p>可以收入货架图鉴了</p>
+        </div>
+
+        <div class="panel show" id="parcelPanel">
+          <div class="parcel"><span class="stamp">旧物邮寄</span></div>
+          <h2>包裹到了</h2>
+          <p>尘封多年的卡带，胶带和锈斑裹着封面。点「开箱」看看是哪一卷。</p>
+        </div>
+
+        <div class="shelf-view" id="shelfView">
+          <h2>货架图鉴</h2>
+          <div class="sub" id="shelfSub">已收集 0 / 8</div>
+          <div class="shelf-grid" id="shelfGrid"></div>
+        </div>
+      </div>
+
+      <footer>
+        <button type="button" class="secondary" id="btnShelf">货架</button>
+        <button type="button" id="btnNextParcel" disabled>拆下一个包裹</button>
+        <button type="button" class="primary" id="btnMain">开箱</button>
+      </footer>
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+
+  <script>
+(function () {
+  'use strict';
+
+  const CLEAR_THRESHOLD = 0.95;
+  const BRUSH_RADIUS = 26;
+  const SAMPLE_STEP = 4;
+
+  /** 全部虚构戏仿 · 程序绘制 · 无真作版权 */
+  const TAPES = [
+    {
+      id: 'forest-flash',
+      title: '林间闪光',
+      rare: false,
+      colors: { body: '#2d4a3a', label: '#c8e0b0', accent: '#7ec850', ink: '#1a2e20' },
+      pattern: 'trees',
+    },
+    {
+      id: 'skyrail',
+      title: '空轨站',
+      rare: false,
+      colors: { body: '#3a4558', label: '#d0d8e8', accent: '#6a9ccc', ink: '#1e2430' },
+      pattern: 'rails',
+    },
+    {
+      id: 'deep-well',
+      title: '深井回声',
+      rare: true,
+      colors: { body: '#2a2838', label: '#b8b0c8', accent: '#8878c0', ink: '#181620' },
+      pattern: 'well',
+    },
+    {
+      id: 'paper-boat',
+      title: '纸舟',
+      rare: false,
+      colors: { body: '#5a4838', label: '#f0e0c8', accent: '#d4a070', ink: '#302418' },
+      pattern: 'boat',
+    },
+    {
+      id: 'night-dice',
+      title: '夜市骰子',
+      rare: false,
+      colors: { body: '#5a3040', label: '#f0d0c8', accent: '#e07070', ink: '#301820' },
+      pattern: 'dice',
+    },
+    {
+      id: 'cloud-laundry',
+      title: '云端洗衣',
+      rare: false,
+      colors: { body: '#3a5868', label: '#d0e8f0', accent: '#70c0d8', ink: '#183040' },
+      pattern: 'clouds',
+    },
+    {
+      id: 'stone-cat',
+      title: '石阶猫',
+      rare: false,
+      colors: { body: '#4a4838', label: '#e8e0c0', accent: '#c0a858', ink: '#282818' },
+      pattern: 'cat',
+    },
+    {
+      id: 'rust-radio',
+      title: '锈港电台',
+      rare: true,
+      colors: { body: '#583828', label: '#e8d0b0', accent: '#c87840', ink: '#301808' },
+      pattern: 'radio',
+    },
+  ];
+
+  const baseCanvas = document.getElementById('baseCanvas');
+  const dirtCanvas = document.getElementById('dirtCanvas');
+  const baseCtx = baseCanvas.getContext('2d');
+  const dirtCtx = dirtCanvas.getContext('2d', { willReadFrequently: true });
+  const stage = document.getElementById('stage');
+  const pctLabel = document.getElementById('pctLabel');
+  const pctBar = document.getElementById('pctBar');
+  const statusBadge = document.getElementById('statusBadge');
+  const hint = document.getElementById('hint');
+  const cleared = document.getElementById('cleared');
+  const clearedName = document.getElementById('clearedName');
+  const parcelPanel = document.getElementById('parcelPanel');
+  const shelfView = document.getElementById('shelfView');
+  const shelfGrid = document.getElementById('shelfGrid');
+  const shelfSub = document.getElementById('shelfSub');
+  const btnMain = document.getElementById('btnMain');
+  const btnShelf = document.getElementById('btnShelf');
+  const btnNextParcel = document.getElementById('btnNextParcel');
+  const toastEl = document.getElementById('toast');
+
+  // phases: parcel | wipe | done | shelf
+  let phase = 'parcel';
+  let day = 1;
+  let queue = TAPES.map((_, i) => i);
+  shuffle(queue);
+  let currentIndex = -1;
+  let collected = {}; // id -> true
+  let initialOpaque = 0;
+  let wiping = false;
+  let lastX = null, lastY = null;
+  let clearedOnce = false;
+  let audioCtx = null;
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let toastTimer = null;
+  let shelvedThis = false;
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1800);
+  }
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  function playClearSound() {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    // warm cassette-ish chime (ascending soft squares)
+    const notes = [392, 493.88, 587.33, 784];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = i % 2 ? 'triangle' : 'sine';
+      osc.frequency.value = freq;
+      const t0 = now + i * 0.1;
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(0.18, t0 + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.4);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + 0.45);
+    });
+  }
+
+  function playOpenSound() {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(90, now + 0.18);
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.25);
+  }
+
+  function playShelfSound() {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(520, now);
+    osc.frequency.linearRampToValueAtTime(660, now + 0.12);
+    gain.gain.setValueAtTime(0.14, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.3);
+  }
+
+  function sizeCanvases() {
+    const rect = stage.getBoundingClientRect();
+    const w = Math.max(1, Math.floor(rect.width));
+    const h = Math.max(1, Math.floor(rect.height));
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    for (const c of [baseCanvas, dirtCanvas]) {
+      c.width = Math.floor(w * dpr);
+      c.height = Math.floor(h * dpr);
+      c.style.width = w + 'px';
+      c.style.height = h + 'px';
+    }
+    baseCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    dirtCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { w, h };
+  }
+
+  /** Pixel-art cassette drawing into any 2d ctx, logical size w×h */
+  function drawCassette(ctx, w, h, tape) {
+    const c = tape.colors;
+    ctx.clearRect(0, 0, w, h);
+
+    // desk / felt background
+    const bg = ctx.createLinearGradient(0, 0, 0, h);
+    bg.addColorStop(0, '#e4d2b4');
+    bg.addColorStop(1, '#cbb896');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, w, h);
+
+    // soft wood grain lines
+    ctx.strokeStyle = 'rgba(90,70,40,0.06)';
+    ctx.lineWidth = 1;
+    for (let y = 8; y < h; y += 14) {
+      ctx.beginPath();
+      ctx.moveTo(0, y + Math.sin(y) * 2);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+
+    // cassette body rect (landscape tape)
+    const tw = Math.min(w * 0.78, h * 0.95);
+    const th = tw * 0.62;
+    const tx = (w - tw) / 2;
+    const ty = (h - th) / 2;
+
+    // shadow
+    ctx.fillStyle = 'rgba(40,28,16,0.28)';
+    roundRect(ctx, tx + 4, ty + 6, tw, th, 6);
+    ctx.fill();
+
+    // shell
+    ctx.fillStyle = c.body;
+    roundRect(ctx, tx, ty, tw, th, 6);
+    ctx.fill();
+
+    // bevel highlight
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.lineWidth = 2;
+    roundRect(ctx, tx + 1, ty + 1, tw - 2, th - 2, 5);
+    ctx.stroke();
+
+    // label window
+    const lw = tw * 0.78;
+    const lh = th * 0.52;
+    const lx = tx + (tw - lw) / 2;
+    const ly = ty + th * 0.12;
+    ctx.fillStyle = c.label;
+    roundRect(ctx, lx, ly, lw, lh, 3);
+    ctx.fill();
+
+    // pixel pattern art on label
+    drawPattern(ctx, lx, ly, lw, lh, tape);
+
+    // title strip
+    ctx.fillStyle = c.ink;
+    ctx.font = 'bold ' + Math.max(11, Math.floor(tw * 0.075)) + 'px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(tape.title, lx + lw / 2, ly + lh * 0.82);
+
+    // twin reels
+    const reelY = ty + th * 0.78;
+    const reelR = tw * 0.07;
+    const reelGap = tw * 0.22;
+    drawReel(ctx, tx + tw / 2 - reelGap / 2, reelY, reelR, c.accent);
+    drawReel(ctx, tx + tw / 2 + reelGap / 2, reelY, reelR, c.accent);
+
+    // write-protect notches
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fillRect(tx + tw * 0.08, ty + th * 0.72, tw * 0.06, th * 0.12);
+    ctx.fillRect(tx + tw * 0.86, ty + th * 0.72, tw * 0.06, th * 0.12);
+
+    if (tape.rare) {
+      ctx.strokeStyle = '#d4a84b';
+      ctx.lineWidth = 3;
+      roundRect(ctx, tx - 3, ty - 3, tw + 6, th + 6, 8);
+      ctx.stroke();
+    }
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  }
+
+  function drawReel(ctx, cx, cy, r, accent) {
+    ctx.fillStyle = '#1a1410';
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(a) * r * 0.85, cy + Math.sin(a) * r * 0.85);
+      ctx.stroke();
+    }
+  }
+
+  function px(ctx, x, y, s, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(Math.floor(x), Math.floor(y), s, s);
+  }
+
+  function drawPattern(ctx, lx, ly, lw, lh, tape) {
+    const s = Math.max(3, Math.floor(Math.min(lw, lh) / 18));
+    const accent = tape.colors.accent;
+    const ink = tape.colors.ink;
+    const cx = lx + lw / 2;
+    const cy = ly + lh * 0.38;
+
+    ctx.save();
+    // clip to label
+    roundRect(ctx, lx + 2, ly + 2, lw - 4, lh * 0.68, 2);
+    ctx.clip();
+
+    switch (tape.pattern) {
+      case 'trees': {
+        for (let i = 0; i < 5; i++) {
+          const x = lx + lw * (0.15 + i * 0.16);
+          const hgt = s * (3 + (i % 3));
+          px(ctx, x, cy - hgt + s * 2, s, accent);
+          px(ctx, x - s, cy - hgt + s * 3, s, accent);
+          px(ctx, x + s, cy - hgt + s * 3, s, accent);
+          px(ctx, x, cy - hgt + s * 4, s, ink);
+          // sparkles
+          if (i % 2 === 0) px(ctx, x + s * 2, cy - hgt, s, '#f0f8c0');
+        }
+        break;
+      }
+      case 'rails': {
+        for (let i = 0; i < 4; i++) {
+          const y = cy - s * 2 + i * s;
+          ctx.fillStyle = ink;
+          ctx.fillRect(lx + lw * 0.12, y, lw * 0.76, Math.max(1, s / 2));
+        }
+        for (let i = 0; i < 6; i++) {
+          const x = lx + lw * (0.18 + i * 0.12);
+          px(ctx, x, cy - s * 3, s, accent);
+          px(ctx, x, cy + s, s, accent);
+        }
+        // station triangle
+        px(ctx, cx - s, cy - s * 5, s, accent);
+        px(ctx, cx, cy - s * 6, s, accent);
+        px(ctx, cx + s, cy - s * 5, s, accent);
+        break;
+      }
+      case 'well': {
+        // concentric rings
+        for (let r = 5; r >= 1; r--) {
+          ctx.strokeStyle = r % 2 ? accent : ink;
+          ctx.lineWidth = s * 0.7;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r * s * 1.1, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        px(ctx, cx - s / 2, cy - s / 2, s, '#e8e0f8');
+        break;
+      }
+      case 'boat': {
+        // hull
+        for (let i = -3; i <= 3; i++) {
+          px(ctx, cx + i * s, cy + s, s, accent);
+        }
+        for (let i = -2; i <= 2; i++) {
+          px(ctx, cx + i * s, cy + s * 2, s, ink);
+        }
+        // sail
+        px(ctx, cx, cy - s * 3, s, '#fff8e8');
+        px(ctx, cx, cy - s * 2, s, '#fff8e8');
+        px(ctx, cx, cy - s, s, '#fff8e8');
+        px(ctx, cx + s, cy - s * 2, s, '#fff8e8');
+        // waves
+        for (let i = 0; i < 5; i++) {
+          px(ctx, lx + lw * 0.2 + i * s * 2.2, cy + s * 3.5, s, '#70a0c0');
+        }
+        break;
+      }
+      case 'dice': {
+        const faces = [
+          [cx - s * 3, cy - s],
+          [cx + s, cy - s * 2],
+        ];
+        faces.forEach((p, fi) => {
+          ctx.fillStyle = '#f8f0e8';
+          ctx.fillRect(p[0], p[1], s * 3, s * 3);
+          ctx.fillStyle = fi ? accent : ink;
+          px(ctx, p[0] + s, p[1] + s, s, ctx.fillStyle);
+          if (fi) {
+            px(ctx, p[0], p[1], s, accent);
+            px(ctx, p[0] + s * 2, p[1] + s * 2, s, accent);
+          }
+        });
+        // lantern glow
+        px(ctx, cx - s * 0.5, cy - s * 4, s, '#f0c060');
+        break;
+      }
+      case 'clouds': {
+        const blobs = [
+          [cx - s * 3, cy], [cx - s, cy - s], [cx + s, cy], [cx + s * 3, cy - s * 0.5],
+          [cx - s * 2, cy + s], [cx + s * 2, cy + s],
+        ];
+        blobs.forEach(([x, y]) => {
+          ctx.fillStyle = '#f0f8fc';
+          ctx.fillRect(x, y, s * 2, s * 1.5);
+        });
+        // hanging shirt
+        px(ctx, cx - s / 2, cy + s * 2, s, accent);
+        px(ctx, cx - s * 1.5, cy + s * 3, s * 3, accent);
+        break;
+      }
+      case 'cat': {
+        // steps
+        for (let i = 0; i < 4; i++) {
+          ctx.fillStyle = ink;
+          ctx.fillRect(lx + lw * 0.15, cy + s * (i - 1), lw * (0.3 + i * 0.12), s * 0.7);
+        }
+        // cat sitting
+        px(ctx, cx + s, cy - s * 2, s, accent);
+        px(ctx, cx + s * 2, cy - s * 2, s, accent);
+        px(ctx, cx + s, cy - s, s, accent);
+        px(ctx, cx + s * 2, cy - s, s, accent);
+        px(ctx, cx + s, cy, s * 2, accent);
+        // ears
+        px(ctx, cx + s, cy - s * 3, s, accent);
+        px(ctx, cx + s * 2, cy - s * 3, s, accent);
+        // eyes
+        px(ctx, cx + s, cy - s * 1.5, Math.max(2, s / 2), ink);
+        px(ctx, cx + s * 2, cy - s * 1.5, Math.max(2, s / 2), ink);
+        break;
+      }
+      case 'radio': {
+        // radio body
+        ctx.fillStyle = accent;
+        ctx.fillRect(cx - s * 3, cy - s * 2, s * 6, s * 4);
+        ctx.fillStyle = ink;
+        ctx.fillRect(cx - s * 2, cy - s, s * 4, s * 2);
+        // antenna
+        ctx.fillStyle = ink;
+        ctx.fillRect(cx + s * 2, cy - s * 5, Math.max(2, s / 2), s * 3);
+        // dial
+        px(ctx, cx - s * 2.5, cy + s * 1.5, s, '#f0d080');
+        px(ctx, cx + s * 1.5, cy + s * 1.5, s, '#f0d080');
+        // signal arcs
+        ctx.strokeStyle = '#f0d080';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(cx + s * 2.2, cy - s * 4.5, s * 1.5, -Math.PI * 0.7, -Math.PI * 0.1);
+        ctx.stroke();
+        break;
+      }
+      default:
+        break;
+    }
+    ctx.restore();
+  }
+
+  function paintDirt(ctx, w, h) {
+    ctx.globalCompositeOperation = 'source-over';
+    // base grime wash
+    const g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, 'rgba(74, 52, 38, 0.92)');
+    g.addColorStop(0.45, 'rgba(90, 58, 40, 0.88)');
+    g.addColorStop(1, 'rgba(58, 40, 28, 0.94)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+
+    // rust patches
+    const patches = [
+      [0.15, 0.2, 0.22], [0.7, 0.18, 0.18], [0.45, 0.4, 0.28],
+      [0.2, 0.65, 0.2], [0.78, 0.6, 0.24], [0.5, 0.82, 0.16],
+      [0.08, 0.45, 0.14], [0.9, 0.35, 0.12], [0.35, 0.12, 0.1],
+    ];
+    for (const [nx, ny, nr] of patches) {
+      const x = nx * w, y = ny * h, r = nr * Math.min(w, h);
+      const rg = ctx.createRadialGradient(x, y, 0, x, y, r);
+      rg.addColorStop(0, 'rgba(120, 60, 30, 0.85)');
+      rg.addColorStop(0.55, 'rgba(80, 45, 28, 0.55)');
+      rg.addColorStop(1, 'rgba(80, 45, 28, 0)');
+      ctx.fillStyle = rg;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // dust speckles
+    ctx.fillStyle = 'rgba(40, 28, 18, 0.55)';
+    for (let i = 0; i < 60; i++) {
+      const x = ((i * 73) % 100) / 100 * w;
+      const y = ((i * 41 + 17) % 100) / 100 * h;
+      const r = 2 + (i % 5);
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // tape residue streaks
+    ctx.strokeStyle = 'rgba(160, 120, 70, 0.35)';
+    ctx.lineWidth = 10;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(w * 0.1, h * 0.3);
+    ctx.quadraticCurveTo(w * 0.4, h * 0.25, w * 0.55, h * 0.45);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(w * 0.6, h * 0.7);
+    ctx.quadraticCurveTo(w * 0.8, h * 0.55, w * 0.95, h * 0.65);
+    ctx.stroke();
+
+    // fingerprint smudges
+    ctx.fillStyle = 'rgba(60, 42, 30, 0.4)';
+    for (let i = 0; i < 8; i++) {
+      const x = (0.2 + (i % 4) * 0.2) * w;
+      const y = (0.25 + Math.floor(i / 4) * 0.4) * h;
+      ctx.beginPath();
+      ctx.ellipse(x, y, 18, 24, (i * 0.4), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function countOpaque() {
+    const { width, height } = dirtCanvas;
+    const data = dirtCtx.getImageData(0, 0, width, height).data;
+    let n = 0;
+    const step = SAMPLE_STEP * 4;
+    for (let i = 3; i < data.length; i += step) {
+      if (data[i] > 20) n++;
+    }
+    return n;
+  }
+
+  function updateProgress() {
+    if (phase !== 'wipe' && phase !== 'done') {
+      pctLabel.textContent = '—';
+      pctBar.style.width = '0%';
+      return 0;
+    }
+    if (initialOpaque <= 0) {
+      pctLabel.textContent = '100%';
+      pctBar.style.width = '100%';
+      return 1;
+    }
+    const left = countOpaque();
+    const cleaned = Math.max(0, 1 - left / initialOpaque);
+    const pct = Math.min(100, Math.round(cleaned * 100));
+    pctLabel.textContent = pct + '%';
+    pctBar.style.width = pct + '%';
+    return cleaned;
+  }
+
+  function currentTape() {
+    if (currentIndex < 0) return null;
+    return TAPES[currentIndex];
+  }
+
+  function pickNextTape() {
+    // prefer uncollected
+    const uncollected = queue.filter((i) => !collected[TAPES[i].id]);
+    if (uncollected.length === 0) {
+      // all collected — reshuffle and allow duplicates for demo loop
+      queue = TAPES.map((_, i) => i);
+      shuffle(queue);
+      return queue[0];
+    }
+    // take first uncollected in shuffled queue, rotate queue
+    const idx = uncollected[0];
+    queue = queue.filter((i) => i !== idx).concat([idx]);
+    return idx;
+  }
+
+  function showParcel() {
+    phase = 'parcel';
+    shelvedThis = false;
+    clearedOnce = false;
+    wiping = false;
+    cleared.classList.remove('show');
+    shelfView.classList.remove('show');
+    parcelPanel.classList.add('show');
+    hint.classList.add('hidden');
+    stage.classList.remove('wipe-mode');
+    statusBadge.textContent = '第 ' + day + ' 日 · 包裹';
+    pctLabel.textContent = '—';
+    pctBar.style.width = '0%';
+    btnMain.textContent = '开箱';
+    btnMain.className = 'primary';
+    btnMain.disabled = false;
+    btnNextParcel.disabled = true;
+    btnNextParcel.textContent = '拆下一个包裹';
+    // clear canvases under panel
+    const { w, h } = sizeCanvases();
+    baseCtx.clearRect(0, 0, w, h);
+    dirtCtx.clearRect(0, 0, w, h);
+  }
+
+  function openParcel() {
+    ensureAudio();
+    playOpenSound();
+    currentIndex = pickNextTape();
+    const tape = currentTape();
+    phase = 'wipe';
+    shelvedThis = false;
+    clearedOnce = false;
+    parcelPanel.classList.remove('show');
+    shelfView.classList.remove('show');
+    cleared.classList.remove('show');
+    hint.classList.remove('hidden');
+    stage.classList.add('wipe-mode');
+    statusBadge.textContent = (tape.rare ? '★ 稀有 · ' : '') + tape.title;
+    btnMain.textContent = '入架';
+    btnMain.className = 'ok';
+    btnMain.disabled = true;
+    btnNextParcel.disabled = true;
+
+    const { w, h } = sizeCanvases();
+    drawCassette(baseCtx, w, h, tape);
+    dirtCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    dirtCtx.clearRect(0, 0, w, h);
+    paintDirt(dirtCtx, w, h);
+    initialOpaque = countOpaque();
+    updateProgress();
+    showToast('开箱：' + tape.title);
+  }
+
+  function onCleared() {
+    if (clearedOnce) return;
+    clearedOnce = true;
+    phase = 'done';
+    playClearSound();
+    const tape = currentTape();
+    clearedName.textContent = '《' + tape.title + '》' + (tape.rare ? ' ★' : '');
+    cleared.classList.add('show');
+    btnMain.disabled = false;
+    btnMain.textContent = '入架';
+    btnMain.className = 'ok';
+    showToast('修复完成！');
+  }
+
+  function shelveCurrent() {
+    if (!clearedOnce || shelvedThis) return;
+    const tape = currentTape();
+    if (!tape) return;
+    collected[tape.id] = true;
+    shelvedThis = true;
+    playShelfSound();
+    cleared.classList.remove('show');
+    renderShelf();
+    btnMain.disabled = true;
+    btnMain.textContent = '已入架';
+    btnNextParcel.disabled = false;
+    statusBadge.textContent = '已入架 · ' + Object.keys(collected).length + '/' + TAPES.length;
+    showToast('收入货架：《' + tape.title + '》');
+    // briefly flash shelf
+    openShelf();
+  }
+
+  function renderShelf() {
+    shelfGrid.innerHTML = '';
+    const n = Object.keys(collected).length;
+    shelfSub.textContent = '已收集 ' + n + ' / ' + TAPES.length;
+
+    TAPES.forEach((tape) => {
+      const slot = document.createElement('div');
+      slot.className = 'slot' + (tape.rare ? ' rare' : '') + (collected[tape.id] ? '' : ' empty');
+
+      if (collected[tape.id]) {
+        const c = document.createElement('canvas');
+        c.className = 'thumb';
+        c.width = 92 * 2;
+        c.height = 72 * 2;
+        const tctx = c.getContext('2d');
+        tctx.setTransform(2, 0, 0, 2, 0, 0);
+        drawCassette(tctx, 92, 72, tape);
+        slot.appendChild(c);
+        const lab = document.createElement('div');
+        lab.className = 'label';
+        lab.textContent = tape.title;
+        slot.appendChild(lab);
+        if (tape.rare) {
+          const tag = document.createElement('div');
+          tag.className = 'rare-tag';
+          tag.textContent = '稀有';
+          slot.appendChild(tag);
+        }
+      } else {
+        const ph = document.createElement('div');
+        ph.className = 'thumb';
+        ph.style.width = '92px';
+        ph.style.height = '72px';
+        ph.textContent = '？';
+        slot.appendChild(ph);
+        const lab = document.createElement('div');
+        lab.className = 'label';
+        lab.textContent = '未发现';
+        slot.appendChild(lab);
+      }
+      shelfGrid.appendChild(slot);
+    });
+  }
+
+  function openShelf() {
+    renderShelf();
+    shelfView.classList.add('show');
+    parcelPanel.classList.remove('show');
+    btnShelf.textContent = '返回';
+    phase = phase === 'wipe' || phase === 'done' ? phase : 'shelf';
+  }
+
+  function closeShelf() {
+    shelfView.classList.remove('show');
+    btnShelf.textContent = '货架';
+    if (!shelvedThis && currentIndex >= 0 && (phase === 'wipe' || phase === 'done')) {
+      // stay on wipe/done
+      return;
+    }
+    if (shelvedThis || currentIndex < 0) {
+      // after shelving, stay showing last cassette under shelf until next parcel
+      if (currentIndex >= 0 && shelvedThis) {
+        // leave cassette visible under
+      }
+    }
+  }
+
+  function nextParcel() {
+    day += 1;
+    showParcel();
+    showToast('新的一天 · 又来一个包裹');
+  }
+
+  function eraseAt(x, y) {
+    dirtCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    dirtCtx.globalCompositeOperation = 'destination-out';
+    dirtCtx.beginPath();
+    dirtCtx.arc(x, y, BRUSH_RADIUS, 0, Math.PI * 2);
+    dirtCtx.fill();
+    if (lastX !== null) {
+      dirtCtx.lineCap = 'round';
+      dirtCtx.lineJoin = 'round';
+      dirtCtx.lineWidth = BRUSH_RADIUS * 2;
+      dirtCtx.beginPath();
+      dirtCtx.moveTo(lastX, lastY);
+      dirtCtx.lineTo(x, y);
+      dirtCtx.stroke();
+    }
+    lastX = x;
+    lastY = y;
+  }
+
+  function clientToLocal(clientX, clientY) {
+    const rect = dirtCanvas.getBoundingClientRect();
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  }
+
+  function onPointerDown(e) {
+    if (phase !== 'wipe' || shelfView.classList.contains('show') || parcelPanel.classList.contains('show')) return;
+    e.preventDefault();
+    ensureAudio();
+    hint.classList.add('hidden');
+    wiping = true;
+    const p = clientToLocal(e.clientX, e.clientY);
+    lastX = p.x;
+    lastY = p.y;
+    eraseAt(p.x, p.y);
+    const cleaned = updateProgress();
+    if (cleaned >= CLEAR_THRESHOLD) onCleared();
+    if (dirtCanvas.setPointerCapture) {
+      try { dirtCanvas.setPointerCapture(e.pointerId); } catch (_) {}
+    }
+  }
+
+  function onPointerMove(e) {
+    if (!wiping || phase !== 'wipe') return;
+    e.preventDefault();
+    const p = clientToLocal(e.clientX, e.clientY);
+    eraseAt(p.x, p.y);
+    const cleaned = updateProgress();
+    if (cleaned >= CLEAR_THRESHOLD) onCleared();
+  }
+
+  function onPointerUp() {
+    wiping = false;
+    lastX = null;
+    lastY = null;
+  }
+
+  dirtCanvas.addEventListener('pointerdown', onPointerDown);
+  dirtCanvas.addEventListener('pointermove', onPointerMove);
+  dirtCanvas.addEventListener('pointerup', onPointerUp);
+  dirtCanvas.addEventListener('pointercancel', onPointerUp);
+  dirtCanvas.addEventListener('pointerleave', () => { if (wiping) onPointerUp(); });
+
+  btnMain.addEventListener('click', () => {
+    ensureAudio();
+    if (btnMain.textContent === '开箱' || phase === 'parcel') {
+      openParcel();
+      return;
+    }
+    if ((phase === 'done' || clearedOnce) && !shelvedThis) {
+      shelveCurrent();
+      return;
+    }
+  });
+
+  btnShelf.addEventListener('click', () => {
+    ensureAudio();
+    if (shelfView.classList.contains('show')) {
+      closeShelf();
+      if (phase === 'parcel') {
+        parcelPanel.classList.add('show');
+      }
+    } else {
+      openShelf();
+    }
+  });
+
+  btnNextParcel.addEventListener('click', () => {
+    ensureAudio();
+    shelfView.classList.remove('show');
+    btnShelf.textContent = '货架';
+    nextParcel();
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (phase === 'wipe' || phase === 'done') {
+        const tape = currentTape();
+        if (!tape) return;
+        const pctBefore = parseInt(pctLabel.textContent, 10) || 0;
+        const { w, h } = sizeCanvases();
+        drawCassette(baseCtx, w, h, tape);
+        dirtCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        dirtCtx.clearRect(0, 0, w, h);
+        if (clearedOnce && pctBefore >= 95) {
+          // keep clean
+          initialOpaque = 1;
+          updateProgress();
+          cleared.classList.add('show');
+        } else {
+          paintDirt(dirtCtx, w, h);
+          initialOpaque = countOpaque();
+          clearedOnce = false;
+          cleared.classList.remove('show');
+          btnMain.disabled = true;
+          updateProgress();
+          showToast('窗口尺寸变了，污垢已重绘');
+        }
+      } else if (phase === 'parcel') {
+        sizeCanvases();
+      }
+    }, 150);
+  });
+
+  // boot
+  renderShelf();
+  showParcel();
+})();
+  </script>
+</body>
+</html>
