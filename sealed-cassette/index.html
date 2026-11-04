@@ -406,6 +406,177 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+
+    /* —— 爽感反馈 —— */
+    .phone.shake {
+      animation: phoneShake .12s linear 2;
+    }
+    @keyframes phoneShake {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(-2px, 1px); }
+      50% { transform: translate(2px, -1px); }
+      75% { transform: translate(-1px, -1px); }
+    }
+    .phone.flash::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 42%, rgba(255,248,220,.92), rgba(255,230,160,.35) 42%, transparent 70%);
+      animation: flashBurst .55s ease-out forwards;
+      border-radius: 28px;
+    }
+    @keyframes flashBurst {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .stage.cover-pop #baseCanvas {
+      animation: coverPop .45s cubic-bezier(.2,1.4,.4,1);
+      transform-origin: center center;
+    }
+    @keyframes coverPop {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+    .bar.milestone {
+      box-shadow: 0 0 0 2px rgba(212,168,75,.55), 0 0 12px rgba(212,168,75,.35);
+      animation: barFlash .35s ease-out;
+    }
+    .bar > i.pulse {
+      filter: brightness(1.35);
+    }
+    @keyframes barFlash {
+      0% { transform: scaleY(1.6); }
+      100% { transform: scaleY(1); }
+    }
+    .progress-block { transform-origin: center; }
+    .progress-block.tick {
+      animation: progressTick .28s ease-out;
+    }
+    @keyframes progressTick {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+    #fxLayer {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .crumb {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      border-radius: 50% 40% 55% 35%;
+      background: #5a3a28;
+      box-shadow: 0 0 0 1px rgba(30,18,10,.25);
+      pointer-events: none;
+      will-change: transform, opacity;
+      animation: crumbFly var(--dur, .55s) ease-out forwards;
+    }
+    .crumb.light { background: #8a6a48; width: 3px; height: 3px; }
+    .crumb.dark { background: #3a2418; width: 6px; height: 4px; border-radius: 2px; }
+    @keyframes crumbFly {
+      0% { transform: translate(0,0) rotate(0deg) scale(1); opacity: .95; }
+      100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(.4); opacity: 0; }
+    }
+    .parcel {
+      transition: transform .35s ease, opacity .35s ease, filter .35s ease;
+    }
+    .parcel.tearing {
+      animation: parcelTear .42s ease-in forwards;
+    }
+    .parcel.tearing::before {
+      animation: tapePeel .38s ease-in forwards;
+    }
+    @keyframes parcelTear {
+      0% { transform: scale(1) rotate(0deg); filter: none; opacity: 1; }
+      35% { transform: scale(1.05) rotate(-3deg); }
+      70% { transform: scale(1.08) rotate(4deg) translateY(-4px); filter: brightness(1.15); }
+      100% { transform: scale(1.2) rotate(-8deg) translateY(10px); opacity: 0; filter: brightness(1.3); }
+    }
+    @keyframes tapePeel {
+      0% { transform: translateX(-50%) rotate(0deg); opacity: .85; }
+      40% { transform: translateX(-30%) rotate(-12deg) translateY(-8px); }
+      100% { transform: translateX(40%) rotate(28deg) translateY(-28px); opacity: 0; }
+    }
+    .cleared-overlay {
+      opacity: 0;
+      transition: opacity .25s;
+    }
+    .cleared-overlay.show {
+      display: flex;
+      opacity: 1;
+      animation: clearedIn .35s ease-out;
+    }
+    @keyframes clearedIn {
+      0% { opacity: 0; transform: scale(.92); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .cleared-overlay .big-fixed {
+      font-size: 2.1rem;
+      font-weight: 800;
+      color: #fff8e0;
+      text-shadow: 0 4px 18px rgba(0,0,0,.55), 0 0 24px rgba(212,168,75,.55);
+      letter-spacing: .12em;
+      animation: bigFixedPop .6s cubic-bezier(.2,1.6,.4,1) forwards;
+      margin-bottom: 4px;
+    }
+    @keyframes bigFixedPop {
+      0% { transform: scale(.4); opacity: 0; }
+      45% { transform: scale(1.18); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .cleared-overlay.rare-pulse {
+      box-shadow: inset 0 0 0 3px rgba(212,168,75,.85);
+      animation: rarePulse 1.2s ease-in-out infinite;
+    }
+    @keyframes rarePulse {
+      0%, 100% { box-shadow: inset 0 0 0 3px rgba(212,168,75,.55), 0 0 0 rgba(212,168,75,0); }
+      50% { box-shadow: inset 0 0 0 4px rgba(212,168,75,.95), 0 0 28px rgba(212,168,75,.35); }
+    }
+    .cleared-overlay .cta-late {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .25s, transform .25s;
+      pointer-events: none;
+    }
+    .cleared-overlay .cta-late.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .slot.pop-in {
+      animation: slotPop .38s cubic-bezier(.2,1.4,.4,1) both;
+    }
+    @keyframes slotPop {
+      0% { transform: scale(.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .slot.rare.collected {
+      animation: rareGlow 2.2s ease-in-out infinite;
+    }
+    @keyframes rareGlow {
+      0%, 100% { box-shadow: 0 0 0 1px rgba(212,168,75,.35), inset 0 2px 6px rgba(0,0,0,.25), 0 0 8px rgba(212,168,75,.2); }
+      50% { box-shadow: 0 0 0 2px rgba(212,168,75,.75), inset 0 2px 6px rgba(0,0,0,.25), 0 0 18px rgba(212,168,75,.55); }
+    }
+    .fly-ghost {
+      position: absolute;
+      z-index: 25;
+      pointer-events: none;
+      width: 120px;
+      height: 90px;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.45);
+      transition: transform .42s cubic-bezier(.2,.8,.2,1.2), opacity .42s ease;
+      opacity: 1;
+    }
+    .fly-ghost.land {
+      opacity: 0;
+    }
   </style>
 </head>
 <body>
@@ -429,14 +600,16 @@
         <canvas id="baseCanvas"></canvas>
         <canvas id="dirtCanvas"></canvas>
         <div class="hint hidden" id="hint">用手指 / 鼠标拖着擦掉污垢</div>
+        <div id="fxLayer" aria-hidden="true"></div>
         <div class="cleared-overlay" id="cleared">
+          <div class="big-fixed" id="bigFixed">修好了！</div>
           <h2>✦ 污垢褪尽</h2>
           <p class="tape-name" id="clearedName"></p>
-          <p>可以收入货架图鉴了</p>
+          <p class="cta-late" id="clearedCta">可以收入货架图鉴了</p>
         </div>
 
         <div class="panel show" id="parcelPanel">
-          <div class="parcel"><span class="stamp">旧物邮寄</span></div>
+          <div class="parcel" id="parcelBox"><span class="stamp">旧物邮寄</span></div>
           <h2>包裹到了</h2>
           <p>尘封多年的卡带，胶带和锈斑裹着封面。点「开箱」看看是哪一卷。</p>
         </div>
@@ -462,8 +635,10 @@
   'use strict';
 
   const CLEAR_THRESHOLD = 0.95;
-  const BRUSH_RADIUS = 26;
+  const BRUSH_RADIUS = 36;
   const SAMPLE_STEP = 4;
+  const SCRATCH_THROTTLE_MS = 70;
+  const MILESTONES = [0.25, 0.5, 0.75];
 
   /** 全部虚构戏仿 · 程序绘制 · 无真作版权 */
   const TAPES = [
@@ -544,6 +719,13 @@
   const btnShelf = document.getElementById('btnShelf');
   const btnNextParcel = document.getElementById('btnNextParcel');
   const toastEl = document.getElementById('toast');
+  const phoneEl = document.getElementById('phone');
+  const fxLayer = document.getElementById('fxLayer');
+  const parcelBox = document.getElementById('parcelBox');
+  const barEl = document.querySelector('.bar');
+  const progressBlock = document.querySelector('.progress-block');
+  const bigFixed = document.getElementById('bigFixed');
+  const clearedCta = document.getElementById('clearedCta');
 
   // phases: parcel | wipe | done | shelf
   let phase = 'parcel';
@@ -560,6 +742,10 @@
   let dpr = Math.min(window.devicePixelRatio || 1, 2);
   let toastTimer = null;
   let shelvedThis = false;
+  let lastScratchAt = 0;
+  let hitMilestones = Object.create(null);
+  let noiseBuffer = null;
+  let shelfRevealTimer = null;
 
   function shuffle(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -585,60 +771,206 @@
     return audioCtx;
   }
 
-  function playClearSound() {
+  function buzz(pattern) {
+    try {
+      if (navigator.vibrate) navigator.vibrate(pattern);
+    } catch (_) {}
+  }
+
+  function shakePhone() {
+    phoneEl.classList.remove('shake');
+    void phoneEl.offsetWidth;
+    phoneEl.classList.add('shake');
+    setTimeout(() => phoneEl.classList.remove('shake'), 280);
+  }
+
+  function getNoiseBuffer(ctx) {
+    if (noiseBuffer) return noiseBuffer;
+    const len = Math.floor(ctx.sampleRate * 0.08);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      const env = 1 - i / len;
+      data[i] = (Math.random() * 2 - 1) * env * env;
+    }
+    noiseBuffer = buf;
+    return buf;
+  }
+
+  function playScratchSound() {
+    const nowMs = performance.now();
+    if (nowMs - lastScratchAt < SCRATCH_THROTTLE_MS) return;
+    lastScratchAt = nowMs;
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const src = ctx.createBufferSource();
+    src.buffer = getNoiseBuffer(ctx);
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 1400 + Math.random() * 900;
+    filter.Q.value = 0.7;
+    const gain = ctx.createGain();
+    gain.gain.value = 0.045 + Math.random() * 0.025;
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    src.start();
+  }
+
+  function playTapeTearSound() {
     const ctx = ensureAudio();
     if (!ctx) return;
     const now = ctx.currentTime;
-    // warm cassette-ish chime (ascending soft squares)
-    const notes = [392, 493.88, 587.33, 784];
+    // sticky peel: filtered noise + descending chirp
+    const src = ctx.createBufferSource();
+    const len = Math.floor(ctx.sampleRate * 0.28);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      const t = i / len;
+      const env = Math.sin(Math.PI * Math.min(1, t * 1.4)) * (1 - t * 0.6);
+      data[i] = (Math.random() * 2 - 1) * env * 0.7;
+    }
+    src.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.setValueAtTime(600, now);
+    filter.frequency.exponentialRampToValueAtTime(2400, now + 0.22);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.22, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    src.start(now);
+    src.stop(now + 0.32);
+
+    const osc = ctx.createOscillator();
+    const og = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(220, now);
+    osc.frequency.exponentialRampToValueAtTime(70, now + 0.2);
+    og.gain.setValueAtTime(0.08, now);
+    og.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+    osc.connect(og);
+    og.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.25);
+  }
+
+  function playClearSound(rare) {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    // louder ascending triumph
+    const notes = rare
+      ? [392, 523.25, 659.25, 783.99, 1046.5]
+      : [392, 493.88, 587.33, 784];
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = i % 2 ? 'triangle' : 'sine';
       osc.frequency.value = freq;
-      const t0 = now + i * 0.1;
+      const t0 = now + i * 0.085;
+      const peak = rare ? 0.28 : 0.24;
       gain.gain.setValueAtTime(0, t0);
-      gain.gain.linearRampToValueAtTime(0.18, t0 + 0.025);
-      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.4);
+      gain.gain.linearRampToValueAtTime(peak, t0 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.5);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(t0);
-      osc.stop(t0 + 0.45);
+      osc.stop(t0 + 0.55);
     });
+    if (rare) {
+      // extra sparkle shimmer
+      [1200, 1600, 2000].forEach((f, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.value = f;
+        const t0 = now + 0.18 + i * 0.06;
+        g.gain.setValueAtTime(0, t0);
+        g.gain.linearRampToValueAtTime(0.1, t0 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.2);
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.start(t0);
+        o.stop(t0 + 0.22);
+      });
+    }
   }
 
   function playOpenSound() {
-    const ctx = ensureAudio();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(180, now);
-    osc.frequency.exponentialRampToValueAtTime(90, now + 0.18);
-    gain.gain.setValueAtTime(0.12, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.25);
+    playTapeTearSound();
   }
 
   function playShelfSound() {
     const ctx = ensureAudio();
     if (!ctx) return;
     const now = ctx.currentTime;
+    // solid thunk + soft ding
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(520, now);
-    osc.frequency.linearRampToValueAtTime(660, now + 0.12);
-    gain.gain.setValueAtTime(0.14, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(70, now + 0.12);
+    gain.gain.setValueAtTime(0.22, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(now);
-    osc.stop(now + 0.3);
+    osc.stop(now + 0.2);
+
+    const ding = ctx.createOscillator();
+    const dg = ctx.createGain();
+    ding.type = 'sine';
+    ding.frequency.setValueAtTime(660, now + 0.08);
+    ding.frequency.linearRampToValueAtTime(880, now + 0.2);
+    dg.gain.setValueAtTime(0, now + 0.08);
+    dg.gain.linearRampToValueAtTime(0.14, now + 0.1);
+    dg.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+    ding.connect(dg);
+    dg.connect(ctx.destination);
+    ding.start(now + 0.08);
+    ding.stop(now + 0.4);
+  }
+
+  function spawnCrumbs(x, y, count) {
+    if (!fxLayer) return;
+    const n = count == null ? 3 + (Math.random() * 3 | 0) : count;
+    const stageRect = stage.getBoundingClientRect();
+    for (let i = 0; i < n; i++) {
+      const el = document.createElement('span');
+      el.className = 'crumb' + (Math.random() > 0.55 ? (Math.random() > 0.5 ? ' light' : ' dark') : '');
+      const dx = (Math.random() - 0.5) * 70;
+      const dy = 28 + Math.random() * 70;
+      el.style.left = Math.max(0, Math.min(stageRect.width - 6, x)) + 'px';
+      el.style.top = Math.max(0, Math.min(stageRect.height - 6, y)) + 'px';
+      el.style.setProperty('--dx', dx + 'px');
+      el.style.setProperty('--dy', dy + 'px');
+      el.style.setProperty('--rot', ((Math.random() - 0.5) * 220) + 'deg');
+      el.style.setProperty('--dur', (0.4 + Math.random() * 0.35) + 's');
+      fxLayer.appendChild(el);
+      setTimeout(() => el.remove(), 800);
+    }
+  }
+
+  function flashMilestone() {
+    if (barEl) {
+      barEl.classList.remove('milestone');
+      void barEl.offsetWidth;
+      barEl.classList.add('milestone');
+      setTimeout(() => barEl.classList.remove('milestone'), 380);
+    }
+    if (progressBlock) {
+      progressBlock.classList.remove('tick');
+      void progressBlock.offsetWidth;
+      progressBlock.classList.add('tick');
+      setTimeout(() => progressBlock.classList.remove('tick'), 300);
+    }
+    pctBar.classList.add('pulse');
+    setTimeout(() => pctBar.classList.remove('pulse'), 280);
+    buzz(12);
   }
 
   function sizeCanvases() {
@@ -1019,6 +1351,15 @@
     const pct = Math.min(100, Math.round(cleaned * 100));
     pctLabel.textContent = pct + '%';
     pctBar.style.width = pct + '%';
+    if (phase === 'wipe') {
+      for (const m of MILESTONES) {
+        const key = String(m);
+        if (cleaned >= m && !hitMilestones[key]) {
+          hitMilestones[key] = true;
+          flashMilestone();
+        }
+      }
+    }
     return cleaned;
   }
 
@@ -1047,11 +1388,17 @@
     shelvedThis = false;
     clearedOnce = false;
     wiping = false;
-    cleared.classList.remove('show');
+    hitMilestones = Object.create(null);
+    clearTimeout(shelfRevealTimer);
+    cleared.classList.remove('show', 'rare-pulse');
+    if (clearedCta) clearedCta.classList.remove('show');
+    if (bigFixed) bigFixed.style.display = '';
     shelfView.classList.remove('show');
     parcelPanel.classList.add('show');
+    if (parcelBox) parcelBox.classList.remove('tearing');
     hint.classList.add('hidden');
-    stage.classList.remove('wipe-mode');
+    stage.classList.remove('wipe-mode', 'cover-pop');
+    phoneEl.classList.remove('flash');
     statusBadge.textContent = '第 ' + day + ' 日 · 包裹';
     pctLabel.textContent = '—';
     pctBar.style.width = '0%';
@@ -1060,6 +1407,7 @@
     btnMain.disabled = false;
     btnNextParcel.disabled = true;
     btnNextParcel.textContent = '拆下一个包裹';
+    if (fxLayer) fxLayer.innerHTML = '';
     // clear canvases under panel
     const { w, h } = sizeCanvases();
     baseCtx.clearRect(0, 0, w, h);
@@ -1068,45 +1416,90 @@
 
   function openParcel() {
     ensureAudio();
+    btnMain.disabled = true;
     playOpenSound();
+    buzz([18, 30, 18]);
+    if (parcelBox) {
+      parcelBox.classList.remove('tearing');
+      void parcelBox.offsetWidth;
+      parcelBox.classList.add('tearing');
+    }
     currentIndex = pickNextTape();
     const tape = currentTape();
-    phase = 'wipe';
-    shelvedThis = false;
-    clearedOnce = false;
-    parcelPanel.classList.remove('show');
-    shelfView.classList.remove('show');
-    cleared.classList.remove('show');
-    hint.classList.remove('hidden');
-    stage.classList.add('wipe-mode');
-    statusBadge.textContent = (tape.rare ? '★ 稀有 · ' : '') + tape.title;
-    btnMain.textContent = '入架';
-    btnMain.className = 'ok';
-    btnMain.disabled = true;
-    btnNextParcel.disabled = true;
+    // ceremony: tear first, then reveal cassette
+    setTimeout(() => {
+      phase = 'wipe';
+      shelvedThis = false;
+      clearedOnce = false;
+      hitMilestones = Object.create(null);
+      parcelPanel.classList.remove('show');
+      if (parcelBox) parcelBox.classList.remove('tearing');
+      shelfView.classList.remove('show');
+      cleared.classList.remove('show', 'rare-pulse');
+      if (clearedCta) clearedCta.classList.remove('show');
+      hint.classList.remove('hidden');
+      stage.classList.add('wipe-mode');
+      statusBadge.textContent = (tape.rare ? '★ 稀有 · ' : '') + tape.title;
+      btnMain.textContent = '入架';
+      btnMain.className = 'ok';
+      btnMain.disabled = true;
+      btnNextParcel.disabled = true;
 
-    const { w, h } = sizeCanvases();
-    drawCassette(baseCtx, w, h, tape);
-    dirtCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    dirtCtx.clearRect(0, 0, w, h);
-    paintDirt(dirtCtx, w, h);
-    initialOpaque = countOpaque();
-    updateProgress();
-    showToast('开箱：' + tape.title);
+      const { w, h } = sizeCanvases();
+      drawCassette(baseCtx, w, h, tape);
+      dirtCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      dirtCtx.clearRect(0, 0, w, h);
+      paintDirt(dirtCtx, w, h);
+      initialOpaque = countOpaque();
+      updateProgress();
+      showToast('开箱：' + tape.title);
+      shakePhone();
+    }, 420);
   }
 
   function onCleared() {
     if (clearedOnce) return;
     clearedOnce = true;
     phase = 'done';
-    playClearSound();
+    wiping = false;
     const tape = currentTape();
+    playClearSound(!!(tape && tape.rare));
+    buzz(tape && tape.rare ? [30, 40, 30, 40, 60] : [40, 30, 50]);
+
+    // flash + cover pop
+    phoneEl.classList.remove('flash');
+    void phoneEl.offsetWidth;
+    phoneEl.classList.add('flash');
+    setTimeout(() => phoneEl.classList.remove('flash'), 600);
+    stage.classList.remove('cover-pop');
+    void stage.offsetWidth;
+    stage.classList.add('cover-pop');
+    setTimeout(() => stage.classList.remove('cover-pop'), 500);
+
+    // burst crumbs from center
+    const rect = stage.getBoundingClientRect();
+    spawnCrumbs(rect.width / 2, rect.height / 2, 18);
+
     clearedName.textContent = '《' + tape.title + '》' + (tape.rare ? ' ★' : '');
+    if (bigFixed) {
+      bigFixed.style.display = '';
+      bigFixed.textContent = '修好了！';
+    }
+    if (clearedCta) clearedCta.classList.remove('show');
+    cleared.classList.remove('rare-pulse');
     cleared.classList.add('show');
-    btnMain.disabled = false;
+    if (tape.rare) cleared.classList.add('rare-pulse');
+
+    // hold big text ~0.6s then reveal shelf CTA / enable button
+    btnMain.disabled = true;
     btnMain.textContent = '入架';
     btnMain.className = 'ok';
-    showToast('修复完成！');
+    clearTimeout(shelfRevealTimer);
+    shelfRevealTimer = setTimeout(() => {
+      if (clearedCta) clearedCta.classList.add('show');
+      btnMain.disabled = false;
+      showToast('修复完成！点「入架」');
+    }, 600);
   }
 
   function shelveCurrent() {
@@ -1115,28 +1508,64 @@
     if (!tape) return;
     collected[tape.id] = true;
     shelvedThis = true;
-    playShelfSound();
-    cleared.classList.remove('show');
-    renderShelf();
     btnMain.disabled = true;
-    btnMain.textContent = '已入架';
-    btnNextParcel.disabled = false;
-    statusBadge.textContent = '已入架 · ' + Object.keys(collected).length + '/' + TAPES.length;
-    showToast('收入货架：《' + tape.title + '》');
-    // briefly flash shelf
-    openShelf();
+
+    // fly ghost toward shelf button
+    const stageRect = stage.getBoundingClientRect();
+    const phoneRect = phoneEl.getBoundingClientRect();
+    const ghost = document.createElement('canvas');
+    ghost.className = 'fly-ghost';
+    ghost.width = 120 * 2;
+    ghost.height = 90 * 2;
+    const gctx = ghost.getContext('2d');
+    gctx.setTransform(2, 0, 0, 2, 0, 0);
+    drawCassette(gctx, 120, 90, tape);
+    const startLeft = stageRect.left - phoneRect.left + stageRect.width / 2 - 60;
+    const startTop = stageRect.top - phoneRect.top + stageRect.height / 2 - 45;
+    ghost.style.left = startLeft + 'px';
+    ghost.style.top = startTop + 'px';
+    phoneEl.appendChild(ghost);
+
+    const btnRect = btnShelf.getBoundingClientRect();
+    const endLeft = btnRect.left - phoneRect.left + btnRect.width / 2 - 60;
+    const endTop = btnRect.top - phoneRect.top - 20;
+    void ghost.offsetWidth;
+    requestAnimationFrame(() => {
+      ghost.style.transform = 'translate(' + (endLeft - startLeft) + 'px,' + (endTop - startTop) + 'px) scale(0.35)';
+      ghost.classList.add('land');
+    });
+
+    setTimeout(() => {
+      ghost.remove();
+      playShelfSound();
+      buzz(25);
+      cleared.classList.remove('show', 'rare-pulse');
+      renderShelf(true);
+      btnMain.textContent = '已入架';
+      btnNextParcel.disabled = false;
+      statusBadge.textContent = '已入架 · ' + Object.keys(collected).length + '/' + TAPES.length;
+      showToast('收入货架：《' + tape.title + '》');
+      openShelf();
+    }, 430);
   }
 
-  function renderShelf() {
+  function renderShelf(animateCollected) {
     shelfGrid.innerHTML = '';
     const n = Object.keys(collected).length;
     shelfSub.textContent = '已收集 ' + n + ' / ' + TAPES.length;
 
-    TAPES.forEach((tape) => {
+    TAPES.forEach((tape, i) => {
+      const got = !!collected[tape.id];
       const slot = document.createElement('div');
-      slot.className = 'slot' + (tape.rare ? ' rare' : '') + (collected[tape.id] ? '' : ' empty');
+      slot.className = 'slot'
+        + (tape.rare ? ' rare' : '')
+        + (got ? ' collected' : ' empty')
+        + (animateCollected && got ? ' pop-in' : '');
+      if (animateCollected && got) {
+        slot.style.animationDelay = (i * 0.04) + 's';
+      }
 
-      if (collected[tape.id]) {
+      if (got) {
         const c = document.createElement('canvas');
         c.className = 'thumb';
         c.width = 92 * 2;
@@ -1172,7 +1601,7 @@
   }
 
   function openShelf() {
-    renderShelf();
+    renderShelf(true);
     shelfView.classList.add('show');
     parcelPanel.classList.remove('show');
     btnShelf.textContent = '返回';
@@ -1203,9 +1632,19 @@
   function eraseAt(x, y) {
     dirtCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     dirtCtx.globalCompositeOperation = 'destination-out';
+    // soft core
     dirtCtx.beginPath();
     dirtCtx.arc(x, y, BRUSH_RADIUS, 0, Math.PI * 2);
     dirtCtx.fill();
+    // crumbly jagged edge: small satellite punches
+    for (let i = 0; i < 5; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const dist = BRUSH_RADIUS * (0.65 + Math.random() * 0.55);
+      const r = 3 + Math.random() * 7;
+      dirtCtx.beginPath();
+      dirtCtx.arc(x + Math.cos(a) * dist, y + Math.sin(a) * dist, r, 0, Math.PI * 2);
+      dirtCtx.fill();
+    }
     if (lastX !== null) {
       dirtCtx.lineCap = 'round';
       dirtCtx.lineJoin = 'round';
@@ -1215,6 +1654,8 @@
       dirtCtx.lineTo(x, y);
       dirtCtx.stroke();
     }
+    // flying dirt crumbs
+    if (Math.random() < 0.7) spawnCrumbs(x, y);
     lastX = x;
     lastY = y;
   }
@@ -1234,6 +1675,9 @@
     lastX = p.x;
     lastY = p.y;
     eraseAt(p.x, p.y);
+    playScratchSound();
+    shakePhone();
+    buzz(8);
     const cleaned = updateProgress();
     if (cleaned >= CLEAR_THRESHOLD) onCleared();
     if (dirtCanvas.setPointerCapture) {
@@ -1246,6 +1690,11 @@
     e.preventDefault();
     const p = clientToLocal(e.clientX, e.clientY);
     eraseAt(p.x, p.y);
+    playScratchSound();
+    if (Math.random() < 0.18) {
+      shakePhone();
+      buzz(6);
+    }
     const cleaned = updateProgress();
     if (cleaned >= CLEAR_THRESHOLD) onCleared();
   }
